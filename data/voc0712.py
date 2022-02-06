@@ -1,10 +1,10 @@
 
-from .config import HOME
+#from .config import HOME
 import os.path as osp
 import sys
-import torch
+import torch , os
 import torch.utils.data as data
-import cv2
+import cv2 , shutil
 import numpy as np
 if sys.version_info[0] == 2:
     import xml.etree.cElementTree as ET
@@ -20,7 +20,7 @@ VOC_CLASSES = (  # always index 0
 
 # note: if you used our download scripts, this should be right
 #VOC_ROOT = osp.join(HOME, "train/VOCdevkit0712/")
-VOC_ROOT = osp.join(HOME, "train/")
+#VOC_ROOT = osp.join(HOME, "train/")
 
 
 class VOCAnnotationTransform(object):
@@ -90,9 +90,9 @@ class VOCDetection(data.Dataset):
     """
 
     def __init__(self, root,
-                 image_sets=[('2007', 'trainval'), ('2012', 'trainval')],
+                 image_sets=[('2012', 'trainval')],
                  transform=None, target_transform=VOCAnnotationTransform(),
-                 dataset_name='VOC0712'):
+                 dataset_name='VOC2012'):
         self.root = root
         self.image_set = image_sets
         self.transform = transform
@@ -100,11 +100,25 @@ class VOCDetection(data.Dataset):
         self.name = dataset_name
         self._annopath = osp.join('%s', 'Annotations', '%s.xml')
         self._imgpath = osp.join('%s', 'JPEGImages', '%s.jpg')
+
+        self.ann_list = []
+        self.img_list = []
+
+        self.xmlfilepath = os.path.join(self.root, 'VOC2012/Annotations')
+        self.image_BasePath = os.path.join(self.root, 'VOC2012/JPEGImages/')
         self.ids = list()
-        for (year, name) in image_sets:
-            rootpath = osp.join(self.root, 'VOC' + year)
-            for line in open(osp.join(rootpath, 'ImageSets', 'Main', name + '.txt')):
-                self.ids.append((rootpath, line.strip()))
+        for x in os.listdir(self.xmlfilepath):
+            name = x.split('.')[0]
+            self.ids.append(str(name))
+        print("leN of ANN" , len(self.ids))
+
+        #
+        # for (year, name) in image_sets:
+        #     rootpath = osp.join(self.root, 'VOC' + year)
+        #     for line in open(osp.join(rootpath, 'ImageSets', 'Main', name + '.txt')):
+        #         self.ids.append((rootpath, line.strip()))
+
+
 
     def __getitem__(self, index):
         im, gt, h, w = self.pull_item(index)
@@ -116,22 +130,37 @@ class VOCDetection(data.Dataset):
 
     def pull_item(self, index):
         img_id = self.ids[index]
+        image_path = os.path.join(self.image_BasePath, img_id + '.jpg')
+        ann_path = os.path.join(self.xmlfilepath, img_id + '.xml')
+        try:
+            # img_id = self.ids[index]
+            # image_path = os.path.join(self.image_BasePath , img_id + '.jpg')
+            # #print(image_path)
+            # ann_path =  os.path.join(self.xmlfilepath , img_id + '.xml')
 
-        target = ET.parse(self._annopath % img_id).getroot()
-        img = cv2.imread(self._imgpath % img_id)
-        height, width, channels = img.shape
+            target = ET.parse(ann_path).getroot()
+            img = cv2.imread(image_path)
+            height, width, channels = img.shape
 
-        if self.target_transform is not None:
-            target = self.target_transform(target, width, height)
+            if self.target_transform is not None:
+                target = self.target_transform(target, width, height)
 
-        if self.transform is not None:
-            target = np.array(target)
-            img, boxes, labels = self.transform(img, target[:, :4], target[:, 4])
-            # to rgb
-            img = img[:, :, (2, 1, 0)]
-            # img = img.transpose(2, 0, 1)
-            target = np.hstack((boxes, np.expand_dims(labels, axis=1)))
-        return torch.from_numpy(img).permute(2, 0, 1), target, height, width
+            if self.transform is not None:
+                target = np.array(target)
+
+                img, boxes, labels = self.transform(img, target[:, :4], target[:, 4])
+                # to rgb
+                img = img[:, :, (2, 1, 0)]
+                # img = img.transpose(2, 0, 1)
+                target = np.hstack((boxes, np.expand_dims(labels, axis=1)))
+
+            return torch.from_numpy(img).permute(2, 0, 1), target, height, width
+        except Exception as e :
+            print(ann_path)
+            temp_file = os.path.join(self.root , "temp/")
+            shutil.move(image_path , temp_file)
+            shutil.move(ann_path , temp_file)
+
         # return torch.from_numpy(img), target, height, width
 
     def pull_image(self, index):
@@ -177,3 +206,10 @@ class VOCDetection(data.Dataset):
             tensorized version of img, squeezed
         '''
         return torch.Tensor(self.pull_image(index)).unsqueeze_(0)
+
+
+
+
+
+
+

@@ -8,7 +8,7 @@ from __future__ import print_function
 import torch
 import torch.backends.cudnn as cudnn
 from torch.autograd import Variable
-from data import VOC_ROOT, VOCAnnotationTransform, VOCDetection, BaseTransform
+from data import  VOCAnnotationTransform, VOCDetection, BaseTransform
 from data import VOC_CLASSES as labelmap
 from ssd_qmv2 import build_ssd
 import xml.etree.ElementTree as ET

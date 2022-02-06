@@ -362,4 +362,4 @@ def weights_init(m):
 
 if __name__ == '__main__':
     train()
-    temp = evaluator(args.net_type, 'VOC0712', 'weights/ssd300_f_final.pth', 'weights/ssd300_h_final.pth', cuda=args.cuda, quant=args.quant, verbose=True)
+    temp = evaluator(args.net_type, 'VOC2012', 'weights/ssd300_f_final.pth', 'weights/ssd300_h_final.pth', cuda=args.cuda, quant=args.quant, verbose=True)
