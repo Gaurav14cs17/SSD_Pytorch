@@ -489,11 +489,11 @@ if __name__ == '__main__':
     traind_model_head = None
 
     if args.net_type == 'qssd':
-        trained_model_net = 'weights/ssd300_f.pth'
-        traind_model_head = 'weights/ssd300_h.pth'
+        trained_model_net = './weights/ssd300_f_10000.pth'
+        traind_model_head = './weights/ssd300_h_10000.pth'
     elif args.net_type == 'tdsod':
-        trained_model_net = 'weights/tdsod300_f.pth'
-        traind_model_head = 'weights/tdsod300_h.pth'
+        trained_model_net = './weights/tdsod300_f.pth'
+        traind_model_head = './weights/tdsod300_h.pth'
     else:
         print('type qssd or tdsod for the net_type')
         exit()

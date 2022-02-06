@@ -59,7 +59,7 @@ parser.add_argument('--visdom', default=False, type=str2bool,
                     help='Use visdom for loss visualization')
 parser.add_argument('--save_folder', default='pretrained/',
                     help='Directory for saving checkpoint models')
-parser.add_argument('--net_type', default='qssd', type=str,
+parser.add_argument('--net_type', default='tdsod', type=str,
                     help='networktype - tdsod qssd') # tdsosd, qssd
 parser.add_argument('--expname', default='TEST', type=str,
                     help='name of experiment')
@@ -311,12 +311,12 @@ def train():
             else:
                 torch.save(net.state_dict(), 'weights/ssd300_f_' + repr(iteration) + '.pth')
                 torch.save(head.state_dict(), 'weights/ssd300_h_' + repr(iteration) + '.pth')
-            mean_AP = evaluator(args.net_type, 'VOC0712',
-                                'weights/ssd300_f_' + repr(iteration) + '.pth',
-                                'weights/ssd300_h_' + repr(iteration) + '.pth',
-                                cuda=args.cuda,
-                                quant=args.quant,
-                                verbose=False)
+            # mean_AP = evaluator(args.net_type, 'VOC0712',
+            #                     'weights/ssd300_f_' + repr(iteration) + '.pth',
+            #                     'weights/ssd300_h_' + repr(iteration) + '.pth',
+            #                     cuda=args.cuda,
+            #                     quant=args.quant,
+            #                     verbose=False)
 
 
     if num_gpu > 1:
